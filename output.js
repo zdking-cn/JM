@@ -1,4 +1,4 @@
-//Wed Aug 14 2024 03:19:13 GMT+0000 (Coordinated Universal Time)
+//Wed Aug 14 2024 03:27:31 GMT+0000 (Coordinated Universal Time)
 //Base:https://github.com/echo094/decode-js
 //Modify:https://github.com/smallfawn/decode_action
 const jdCookie = require("./jdCookie"),
