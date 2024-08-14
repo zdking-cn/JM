@@ -1,787 +1,613 @@
-//Tue Aug 13 2024 06:58:03 GMT+0000 (Coordinated Universal Time)
+//Wed Aug 14 2024 03:10:29 GMT+0000 (Coordinated Universal Time)
 //Base:https://github.com/echo094/decode-js
 //Modify:https://github.com/smallfawn/decode_action
 const jdCookie = require("./jdCookie"),
   notify = require("./utils/Rebels_sendJDNotify"),
-  common = require("./utils/Rebels_jdCommon"),
+  common = require("./utils/Rebels_jdCommon.js"),
+  getToken = require("./utils/Rebels_Token.js"),
   {
-    H5st,
-    jsTk
-  } = require("./utils/Rebels_H");
-let turnlinkId = "CDv-TaCmVcD0sxAI_HE2RQ",
-  superlinkId = "aE-1vg6_no2csxgXFuv3Kg",
-  taskThreads = process.env.jd_wyw__threads || "1";
-const runInterval = process.env.jd_wyw__interval || "2000",
-  isNotify = (process.env.jd_wyw_notify || process.env.jd_wyw_Notify) === "true",
-  pinFilter = (process.env.jd_wyw_pinFilter || "").split("@");
-let turnNum = process.env.jd_wyw_turnnum || "50",
-  errMsgPin = [],
-  shareCodes = [],
-  needRemoveCodes = [],
-  cookiesArr = Object.keys(jdCookie).map(_0x32b59c => jdCookie[_0x32b59c]).filter(_0x2b1712 => _0x2b1712);
+    lzdz1_savePrize
+  } = require("./utils/Rebels_savePrize.js"),
+  hotbreak = process.env.jd_opencard_break === "true",
+  isNotify = process.env.jd_opencard_notify === "true";
+let domains = "https://mybbphdyh-2357-dz.isvjcloud.com",
+  myCard = [];
+$.selectedCardUuid = "";
+const tasklist = {
+  1: "[孕检]",
+  2: "[0-3岁]",
+  3: "[3-6岁]",
+  4: "[6-12岁]"
+};
+let cookie = "",
+  activityCookie = "";
+const cookiesArr = Object.keys(jdCookie).map(_0x16aea3 => jdCookie[_0x16aea3]).filter(_0x4c4cc9 => _0x4c4cc9);
 !cookiesArr[0] && ($.msg($.name, "【提示】请先获取Cookie"), process.exit(1));
 !(async () => {
+  console.log("开卡类活动不会自动运行，请自行测试是否有水");
+  authorCodeList = await getAuthorCodeList("http://code.257999.xyz/jd_lzdz1_mybbphdyh.json");
+  if (authorCodeList) {
+    console.log("\n服务状态正常，活动获取成功");
+    $.authorCode = authorCodeList[random(0, authorCodeList.length)];
+  } else {
+    let _0x514e7e = [""];
+    $.authorCode = _0x514e7e[random(0, _0x514e7e.length)];
+    console.log("\n服务状态异常，请检查网络是否正常\n");
+  }
+  $.activityId = "dz6c1cb6fb4ecebcade3602aa7e734";
+  $.shareUuid = $.authorCode;
+  $.activityUrl = "https://mybbphdyh-2357-dz.isvjcloud.com//m/1000001934/" + $.activityId + "/?shareUuid=" + $.shareUuid;
   notify.config({
     title: $.name
   });
-  await Main();
-  isNotify && notify.getMessage() && (await notify.push());
-})().catch(_0x38bab2 => $.logErr(_0x38bab2)).finally(() => $.done());
-async function Main() {
-  try {
-    try {
-      const _0x4bcc08 = parseInt(taskThreads);
-      _0x4bcc08 > 0 && _0x4bcc08 !== 1 && (taskThreads = _0x4bcc08);
-    } catch {
-      taskThreads = 1;
-    }
-    taskThreads = Math.min(taskThreads, 1);
-    $.waitTime = null;
-    if (runInterval) {
-      try {
-        const _0x546a06 = parseInt(runInterval);
-        _0x546a06 >= 0 && ($.waitTime = _0x546a06);
-      } catch {
-        console.log("⚠ 自定义运行间隔时长设置错误");
-      }
-    }
-    console.log("==========" + $.name + "变量开启状态==========");
-    console.log("活动入口: APP-我的-更多工具-玩一玩");
-    console.log("代理开关: [" + common.getProxyStatus() + "]");
-    console.log("通知推送: [" + (isNotify ? "开启" : "关闭") + "]");
-    console.log("账号过滤: [" + pinFilter.join(", ") + "]");
-    console.log("==========" + $.name + "变量状态结束==========");
-    console.log("");
-    $.needRemoveCookieIndex = [];
-    await common.concTask(taskThreads, cookiesArr, taskFnc);
-    $.hasPrintActInfo = false;
-    $.runEnd = false;
-    $.needRemoveCookieIndex.length > 0 && (cookiesArr = cookiesArr.filter((_0x2449fb, _0x39b18c) => !$.needRemoveCookieIndex.includes(_0x39b18c + 1)), $.needRemoveCookieIndex = []);
-    const _0x491f7a = notify.getMessage();
-    _0x491f7a && console.log("\n📣 运行结果\n" + _0x491f7a.replace(/：/g, " ➜ "));
-    if (errMsgPin.length > 0) {
-      let _0xc28e65 = "\n以下账号可能是火爆，请加入黑名单\nexport jd_wyw_pinFilter=\"" + errMsgPin.join("&") + "\"";
-      console.log(_0xc28e65);
-    }
-  } catch (_0x3bf545) {
-    console.log("❌ 脚本运行遇到了错误\n" + _0x3bf545);
-  }
-}
-async function taskFnc(_0x5dea30, _0x3d425a) {
-  if ($.runEnd) {
-    return {
-      runEnd: true
-    };
-  }
-  const _0x193d45 = decodeURIComponent(common.getCookieValue(_0x5dea30, "pt_pin"));
-  function _0x4fe1c9(_0xacfee1, _0x489401) {
-    if (_0xacfee1.length <= 4) {
-      return _0xacfee1;
-    } else {
-      const _0x55455a = _0xacfee1.slice(0, 2),
-        _0x2d0b7d = _0xacfee1.slice(-2),
-        _0x45659e = Math.max(_0x489401 - _0x55455a.length - _0x2d0b7d.length, 0),
-        _0x5cdffe = "*".repeat(_0x45659e);
-      return _0x55455a + _0x5cdffe + _0x2d0b7d;
-    }
-  }
-  const _0x4ee995 = decodeURIComponent(_0x193d45),
-    _0x21b4f7 = _0x4fe1c9(_0x4ee995, 6),
-    _0x3fa960 = "【账号" + _0x3d425a + "】" + _0x21b4f7 + "：",
-    _0x2e3d0d = notify.create(_0x3d425a, _0x193d45);
-  if (pinFilter.length > 0 && (pinFilter.includes(_0x193d45) || pinFilter.includes(encodeURIComponent(_0x193d45)))) {
-    _0x2e3d0d.fix("已设置跳过运行当前账号");
-    console.log(_0x2e3d0d.getInlineContent());
-    $.needRemoveCookieIndex.push(_0x3d425a);
-    return;
-  }
-  const _0x3b4792 = await common.getLoginStatus(_0x5dea30);
-  if (!_0x3b4792 && typeof _0x3b4792 === "boolean") {
-    console.log(_0x3fa960 + "账号无效");
-    _0x2e3d0d.fix("账号无效");
-    $.needRemoveCookieIndex.push(_0x3d425a);
-    return;
-  }
-  const _0x38d224 = common.genUA(_0x193d45),
-    _0x474cdf = common.genUuid("xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx");
-  let _0xa5f8dd = false,
-    _0x2f64cd = false,
-    _0x168238 = false,
-    _0x334aaf = false,
-    _0x40da5c,
-    _0x2c8870,
-    _0x3569dc,
-    _0x2b833d,
-    _0x59ef2c,
-    _0x35ce35,
-    _0x20743a,
-    _0x1b981c,
-    _0x4a62bd,
-    _0x254354,
-    _0x5af0fd;
-  const {
-    jsToken: _0x4b9f70
-  } = await jsTk(_0x38d224, "https://pro.m.jd.com/mall/active/3fcyrvLZALNPWCEDRvaZJVrzek8v/index.html");
-  await _0x4bcad7("wanyiwan_home");
-  await $.wait(parseInt($.waitTime * 1 + 1000, 10));
-  if (_0x40da5c && _0x40da5c.isLogin) {
-    const _0x3100b0 = _0x40da5c.signBoard.status || 0,
-      _0x1e05f2 = _0x40da5c.signBoard.signedDays || 0,
-      _0x27b2f0 = _0x40da5c.score || 0;
-    console.log(_0x3fa960 + "当前有" + _0x27b2f0 + "奖票");
-    _0x2e3d0d.insert("有" + _0x27b2f0 + "奖票");
-    _0x40da5c.popWindows && _0x40da5c.popWindows.length > 0 && console.log(_0x3fa960 + "首次进入活动，赠送" + _0x40da5c.popWindows[0].getScore + "奖票");
-    _0x3100b0 === 0 && (console.log(_0x3fa960 + "今日还未打卡，已打卡" + _0x1e05f2 + "天，去打卡"), await _0x4bcad7("wanyiwan_sign"), await $.wait(parseInt($.waitTime * 1 + 1000, 10)));
-    if (_0x168238) {
-      return;
-    }
-    await _0x4bcad7("wanyiwan_task_list");
-    if (_0x2b833d) {
-      let _0x3a1b08 = false;
-      for (let _0x5134b8 of _0x2b833d.taskList || []) {
-        let _0x40edbb = _0x5134b8.taskDetail;
-        _0x2c8870 = _0x5134b8;
-        const _0x1386bd = _0x5134b8.status || 0,
-          _0x8397a6 = _0x5134b8.taskType || 0,
-          _0x154548 = _0x5134b8.finishTimes || 0,
-          _0xa1d956 = _0x5134b8.maxTimes || 0;
-        if (_0x1386bd === 3) {
-          continue;
-        }
-        switch (_0x1386bd) {
-          case 1:
-            {
-              switch (_0x8397a6) {
-                case 1:
-                  _0x40edbb = _0x40edbb.filter(_0x9692d6 => _0x9692d6.status === 1);
-                  for (let _0x54c9c5 = _0x154548; _0x54c9c5 < _0xa1d956; _0x54c9c5++) {
-                    _0x3a1b08 = true;
-                    _0x4a62bd = 1;
-                    _0x3569dc = _0x40edbb.pop();
-                    await $.wait(parseInt($.waitTime * 1 + 1000, 10));
-                    await _0x4bcad7("wanyiwan_do_task");
-                    if (_0x168238) {
-                      break;
-                    }
-                    await $.wait(parseInt(_0x5134b8.limitTime * 1000 + 1500, 10));
-                    _0x4a62bd = 0;
-                    await _0x4bcad7("wanyiwan_do_task");
-                    await $.wait(parseInt($.waitTime * 1 + 1000, 10));
-                    await _0x4bcad7("wanyiwan_task_receive_award");
-                    await $.wait(parseInt($.waitTime * 1 + 1000, 10));
-                  }
-                  break;
-                case 3:
-                  break;
-                case 4:
-                  for (let _0x129240 = _0x154548; _0x129240 < _0xa1d956; _0x129240++) {
-                    _0x3a1b08 = true;
-                    _0x4a62bd = 0;
-                    await $.wait(parseInt($.waitTime * 1 + 1000, 10));
-                    await _0x4bcad7("wanyiwan_do_task");
-                    if (_0x168238) {
-                      break;
-                    }
-                    await $.wait(parseInt($.waitTime * 1 + 1500, 10));
-                    await _0x4bcad7("wanyiwan_task_receive_award");
-                    await $.wait(parseInt($.waitTime * 1 + 1500, 10));
-                  }
-                  break;
-                case 5:
-                  for (let _0x27f292 = _0x154548; _0x27f292 < _0xa1d956; _0x27f292++) {
-                    _0x3a1b08 = true;
-                    let _0x2ccb03 = _0x40edbb[0].itemId;
-                    if (!shareCodes.includes(_0x2ccb03)) {
-                      shareCodes.push(_0x2ccb03);
-                      if (shareCodes.length >= 2) {
-                        for (let _0x2845c1 of shareCodes) {
-                          _0x5af0fd = _0x2845c1;
-                          await $.wait(parseInt($.waitTime * 1 + 1000, 10));
-                          await _0x4bcad7("wanyiwan_assist");
-                          if (_0xa5f8dd) {
-                            break;
-                          }
-                          await $.wait(parseInt($.waitTime * 1 + 2500, 10));
-                        }
-                      }
-                    }
-                  }
-                  break;
-              }
-              break;
-            }
-          case 2:
-            {
-              for (let _0x542c16 = 0; _0x542c16 < _0x154548; _0x542c16++) {
-                await _0x4bcad7("wanyiwan_task_receive_award");
-                await $.wait(parseInt($.waitTime * 1 + 1000, 10));
-              }
-              break;
-            }
-          default:
-            console.log(_0x3fa960 + "任务 \"" + _0x5134b8.title + "\" 状态未知：" + _0x5134b8.taskStatus);
-            break;
-        }
-        if (needRemoveCodes.length > 0) {
-          for (let _0x3331bc of needRemoveCodes) {
-            shareCodes.includes(_0x3331bc) && shareCodes.splice(shareCodes.indexOf(_0x3331bc), 1);
-          }
-        }
-        if (_0x168238) {
-          break;
-        }
-        await $.wait(parseInt($.waitTime * 1 + 1000, 10));
-      }
-      if (_0x3a1b08) {
-        if (_0x168238) {
-          return;
-        }
-        await _0x4bcad7("wanyiwan_task_list");
-        await $.wait(parseInt($.waitTime * 1 + 1000, 10));
-        for (let _0x3b05c5 of _0x2b833d.taskList || []) {
-          _0x2c8870 = _0x3b05c5;
-          const _0x2b79e9 = _0x3b05c5.status || 0;
-          if (_0x2b79e9 === 2) {
-            for (let _0x360a89 = 0; _0x360a89 < finishTimes; _0x360a89++) {
-              await _0x4bcad7("wanyiwan_task_receive_award");
-              await $.wait(parseInt($.waitTime * 1 + 500, 10));
-            }
-          }
-        }
-      }
-    }
-    if (_0x168238) {
-      return;
-    }
-  }
-  if ($.runEnd) {
-    return {
-      runEnd: true
-    };
-  }
-  await $.wait(parseInt($.waitTime * 1 + 2000, 10));
-  async function _0x25edd1(_0xa47bfa, _0x1c1ded) {
-    try {
-      let _0x149cb0 = "";
-      switch (_0xa47bfa) {
-        case "wanyiwan_home":
-          _0x1c1ded.code == 0 && _0x1c1ded.data ? _0x1c1ded.data.bizCode === 0 ? _0x40da5c = _0x1c1ded.data.result : (_0x149cb0 = common.getErrorMsg(_0x1c1ded.data), console.log(_0x3fa960 + "进入首页失败：" + _0x149cb0), ["火爆"].some(_0x80aab => _0x149cb0.includes(_0x80aab)) && (errMsgPin.push(_0x193d45), _0x168238 = true)) : (_0x149cb0 = common.getErrorMsg(_0x1c1ded), console.log(_0x3fa960 + "进入首页失败：" + _0x149cb0));
-          break;
-        case "wanyiwan_sign":
-          _0x1c1ded.code == 0 && _0x1c1ded.data ? _0x1c1ded.data.bizCode === 0 ? console.log(_0x3fa960 + "打卡成功，已打卡" + _0x1c1ded.data.result.signedDays + "天，获得" + _0x1c1ded.data.result.getScore + "奖票") : (_0x149cb0 = common.getErrorMsg(_0x1c1ded.data), console.log(_0x3fa960 + "打卡失败：" + _0x149cb0), ["失败", "糟糕", "火爆", "无法打卡"].some(_0x330e98 => _0x149cb0.includes(_0x330e98)) && (errMsgPin.push(_0x193d45), _0x168238 = true)) : (_0x149cb0 = common.getErrorMsg(_0x1c1ded), console.log(_0x3fa960 + "打卡失败：" + _0x149cb0));
-          break;
-        case "wanyiwan_task_list":
-          _0x1c1ded.code == 0 && _0x1c1ded.data ? _0x1c1ded.data.bizCode === 0 ? _0x2b833d = _0x1c1ded.data.result : (_0x149cb0 = common.getErrorMsg(_0x1c1ded.data), console.log(_0x3fa960 + "任务列表失败：" + _0x149cb0)) : (_0x149cb0 = common.getErrorMsg(_0x1c1ded), console.log(_0x3fa960 + "任务列表失败：" + _0x149cb0));
-          break;
-        case "wanyiwan_point_record":
-        case "wanyiwan_point_record":
-          if (_0x1c1ded.code == 0 && _0x1c1ded.data) {
-            if (!(_0x1c1ded.data.bizCode === 0)) {
-              _0x149cb0 = common.getErrorMsg(_0x1c1ded.data);
-              console.log(_0x3fa960 + "任务列表失败：" + _0x149cb0);
-            }
-          } else {
-            _0x149cb0 = common.getErrorMsg(_0x1c1ded);
-            console.log(_0x3fa960 + "任务列表失败：" + _0x149cb0);
-          }
-          break;
-        case "wanyiwan_exchange_page":
-          _0x1c1ded.code == 0 && _0x1c1ded.data ? _0x1c1ded.data.bizCode === 0 ? _0x59ef2c = _0x1c1ded.data.result : (_0x149cb0 = common.getErrorMsg(_0x1c1ded.data), console.log(_0x3fa960 + "兑换列表失败：" + _0x149cb0)) : (_0x149cb0 = common.getErrorMsg(_0x1c1ded), console.log(_0x3fa960 + "兑换列表失败：" + _0x149cb0));
-          break;
-        case "wanyiwan_do_task":
-          _0x254354 = _0x4a62bd === 0 ? "完成" : "开始";
-          if (_0x1c1ded.code == 0 && _0x1c1ded.data) {
-            if (!(_0x1c1ded.data.bizCode === 0)) {
-              _0x149cb0 = common.getErrorMsg(_0x1c1ded.data);
-              console.log(_0x3fa960 + "[" + _0x2c8870.title + "]任务" + _0x254354 + "失败：" + _0x149cb0);
-              ["用户较多", "火爆", "暂时无法"].some(_0x32801f => _0x149cb0.includes(_0x32801f)) && (_0x168238 = true);
-            }
-          } else {
-            _0x149cb0 = common.getErrorMsg(_0x1c1ded);
-            console.log(_0x3fa960 + "[" + _0x2c8870.title + "]任务" + _0x254354 + "失败：" + _0x149cb0);
-            ["用户较多", "火爆", "暂时无法"].some(_0xbcd292 => _0x149cb0.includes(_0xbcd292)) && (_0x168238 = true);
-          }
-          break;
-        case "wanyiwan_task_receive_award":
-          _0x1c1ded.code == 0 && _0x1c1ded.data ? _0x1c1ded.data.bizCode === 0 ? console.log(_0x3fa960 + "领取[" + _0x2c8870.title + "]任务奖励" + (_0x1c1ded.data.result.rewardCount || 0) + "奖票") : (_0x149cb0 = common.getErrorMsg(_0x1c1ded.data), console.log(_0x3fa960 + "领取[" + _0x2c8870.title + "]任务奖励失败：" + _0x149cb0)) : (_0x149cb0 = common.getErrorMsg(_0x1c1ded), console.log(_0x3fa960 + "领取[" + _0x2c8870.title + "]任务奖励失败：" + _0x149cb0));
-          break;
-        case "wanyiwan_assist":
-          if (_0x1c1ded.code == 0) {
-            const _0x33b745 = _0x1c1ded.data.bizCode;
-            switch (_0x33b745) {
-              case 0:
-                console.log(_0x3fa960 + "助力[" + _0x5af0fd.substring(0, 10) + "]成功 ✅ ");
-                _0xa5f8dd = true;
-                break;
-              case -102:
-                _0xa5f8dd = true;
-                break;
-              case -107:
-                _0xa5f8dd = true;
-                break;
-              case -8002:
-                break;
-              case -8003:
-                _0xa5f8dd = true;
-                break;
-              case -8005:
-                console.log(_0x3fa960 + "助力[" + _0x5af0fd.substring(0, 10) + "]失败：助力已满");
-                needRemoveCodes.push(_0x5af0fd);
-                break;
-              case -8006:
-                _0xa5f8dd = true;
-                break;
-              case -8008:
-                _0xa5f8dd = true;
-                break;
-              default:
-                console.log(_0x3fa960 + "助力[" + _0x5af0fd.substring(0, 10) + "]状态未知：" + _0x1c1ded.data.bizMsg + "[" + _0x33b745 + "]");
-                break;
-            }
-          } else {
-            _0x149cb0 = common.getErrorMsg(_0x1c1ded);
-            console.log(_0x3fa960 + "助力失败：" + _0x149cb0);
-            _0xa5f8dd = true;
-          }
-          break;
-        case "turnHappyHome":
-          _0x1c1ded.code == 0 ? _0x1c1ded.success ? _0x35ce35 = _0x1c1ded.data : (_0x149cb0 = common.getErrorMsg(_0x1c1ded.data), console.log(_0x3fa960 + "翻翻乐首页失败：" + _0x149cb0)) : (_0x149cb0 = common.getErrorMsg(_0x1c1ded), console.log(_0x3fa960 + "翻翻乐首页失败：" + _0x149cb0));
-          break;
-        case "turnHappyDouble":
-          if (_0x1c1ded.code == 0) {
-            if (_0x1c1ded.success) {
-              const _0x453561 = _0x1c1ded.data.leftTime,
-                _0x40d5bc = Math.floor(_0x453561 / 1000),
-                _0x5f3934 = _0x1c1ded.data.rewardState,
-                _0x150775 = _0x1c1ded.data.changeTimes,
-                _0x5bbdd3 = _0x1c1ded.data.rewardValue,
-                _0x53063e = Math.floor(_0x40d5bc / 3600),
-                _0x191cb9 = Math.floor(_0x40d5bc % 3600 / 60),
-                _0x1bab44 = _0x40d5bc % 60,
-                _0x308184 = _0x53063e.toString().padStart(2, "0") + ":" + _0x191cb9.toString().padStart(2, "0") + ":" + _0x1bab44.toString().padStart(2, "0");
-              switch (_0x5f3934) {
-                case 0:
-                  console.log(_0x3fa960 + "现在可以参加翻倍玩法啦~");
-                  break;
-                case 1:
-                  console.log(_0x3fa960 + "翻倍第" + _0x150775 + "次成功，累计" + _0x5bbdd3 + "奖票");
-                  break;
-                case 2:
-                  console.log(_0x3fa960 + "翻倍奖励已领取，赢得" + _0x5bbdd3 + "奖票，" + _0x308184 + "后可再次参与");
-                  break;
-                case 3:
-                  console.log(_0x3fa960 + "翻倍第" + _0x150775 + "次失败，损失" + turnNum + "奖票，" + _0x308184 + "后可再次参与");
-                  _0x2e3d0d.insert("翻倍损失" + turnNum + "奖票");
-                  _0x2f64cd = true;
-                  break;
-                default:
-                  console.log(_0x3fa960 + "状态未知：" + _0x5f3934);
-                  break;
-              }
-            } else {
-              _0x149cb0 = common.getErrorMsg(_0x1c1ded.data);
-              console.log(_0x3fa960 + "翻翻乐首页失败：" + _0x149cb0);
-            }
-          } else {
-            _0x149cb0 = common.getErrorMsg(_0x1c1ded);
-            console.log(_0x3fa960 + "翻翻乐首页失败：" + _0x149cb0);
-          }
-          break;
-        case "turnHappyReceive":
-          _0x1c1ded.code == 0 ? _0x1c1ded.success ? (console.log(_0x3fa960 + "见好就收，结束翻倍，赢得" + _0x1c1ded.data.rewardValue + "奖票"), _0x2e3d0d.insert("翻倍赢得" + _0x1c1ded.data.rewardValue + "奖票")) : (_0x149cb0 = common.getErrorMsg(_0x1c1ded.data), console.log(_0x3fa960 + "翻倍领取失败：" + _0x149cb0)) : (_0x149cb0 = common.getErrorMsg(_0x1c1ded), console.log(_0x3fa960 + "翻倍领取失败：" + _0x149cb0));
-          break;
-        case "turnHappyDetailList":
-          _0x1c1ded.code == 0 ? _0x1c1ded.success && _0x1c1ded.data ? _0x1b981c = _0x1c1ded.data.result : (_0x149cb0 = common.getErrorMsg(_0x1c1ded.data), console.log(_0x3fa960 + "翻倍领取失败：" + _0x149cb0)) : (_0x149cb0 = common.getErrorMsg(_0x1c1ded), console.log(_0x3fa960 + "翻倍领取失败：" + _0x149cb0));
-          break;
-        case "superRedBagHome":
-          _0x1c1ded.code == 0 ? _0x1c1ded.success ? _0x20743a = _0x1c1ded.data : (_0x149cb0 = common.getErrorMsg(_0x1c1ded.data), console.log(_0x3fa960 + "摇一摇首页失败：" + _0x149cb0)) : (_0x149cb0 = common.getErrorMsg(_0x1c1ded), console.log(_0x3fa960 + "摇一摇首页失败：" + _0x149cb0));
-          break;
-        case "superRedBagDraw":
-          if (_0x1c1ded.code == 0) {
-            if (_0x1c1ded.success) {
-              if (_0x1c1ded.data && _0x1c1ded.data.shakeLeftTime > 0) {
-                if (_0x1c1ded.data && _0x1c1ded.data.prizeDrawVo) {
-                  const _0x6f606b = _0x1c1ded.data.prizeDrawVo.prizeType;
-                  switch (_0x6f606b) {
-                    case 0:
-                      console.log(_0x3fa960 + "空气");
-                      break;
-                    case 1:
-                      console.log(_0x3fa960 + "获得" + _0x1c1ded.data.prizeDrawVo.prizeConfigName + "(满" + _0x1c1ded.data.prizeDrawVo.useLimit + "减" + _0x1c1ded.data.prizeDrawVo.amount + ")");
-                      break;
-                    case 2:
-                      console.log(_0x3fa960 + "收入" + _0x1c1ded.data.prizeDrawVo.amount + "红包");
-                      break;
-                    case 4:
-                      console.log(_0x3fa960 + "收入" + _0x1c1ded.data.prizeDrawVo.amount + "现金");
-                      break;
-                    case 24:
-                      console.log(_0x3fa960 + "收入" + _0x1c1ded.data.prizeDrawVo.amount + _0x1c1ded.data.prizeDrawVo.prizeConfigName);
-                      break;
-                    default:
-                      console.log(_0x3fa960 + "未知奖品：" + _0x1c1ded.data.prizeDrawVo.prizeConfigName + "(" + _0x6f606b + ")");
-                      break;
-                  }
-                } else {
-                  console.log(_0x3fa960 + "空气");
-                }
-              } else {
-                _0x334aaf = true;
-              }
-            } else {
-              _0x149cb0 = common.getErrorMsg(_0x1c1ded.data);
-              console.log("摇一摇失败：" + _0x149cb0);
-            }
-          } else {
-            _0x149cb0 = common.getErrorMsg(_0x1c1ded);
-            console.log("摇一摇失败：" + _0x149cb0);
-          }
-          break;
-        case "worldCupGuessHome":
-          _0x1c1ded.code == 0 ? _0x1c1ded.success ? _0x1c1ded.data.resultPopInfo && _0x1c1ded.data.resultPopInfo.linkPrizeNum && console.log(_0x3fa960 + "竞猜成功，挣了" + _0x1c1ded.data.resultPopInfo.winTotal + "奖票") : (_0x149cb0 = common.getErrorMsg(_0x1c1ded.data), console.log(_0x3fa960 + "竞猜失败：" + _0x149cb0)) : (_0x149cb0 = common.getErrorMsg(_0x1c1ded), console.log(_0x3fa960 + "竞猜失败：" + _0x149cb0));
-          break;
-      }
-    } catch (_0x109374) {
-      console.log("❌ 未能正确处理 " + _0xa47bfa + " 请求响应 " + (_0x109374.message || _0x109374));
-    }
-  }
-  async function _0x4bcad7(_0x458f10) {
-    if ($.runEnd) {
-      return;
-    }
-    let _0x1bba74 = "",
-      _0x5bc838 = null,
-      _0x3e5172 = null,
-      _0x2ccae5 = "POST",
-      _0xf61c08 = {},
-      _0x491b75 = {};
-    switch (_0x458f10) {
-      case "wanyiwan_home":
-        _0x491b75 = {
-          appId: "c81ad",
-          functionId: _0x458f10,
-          appid: "signed_wh5",
-          clientVersion: common.getLatestAppVersion(),
-          client: "apple",
-          body: {
-            outsite: 0,
-            firstCall: 1,
-            version: 1,
-            lbsSwitch: false
-          },
-          version: "4.7",
-          ua: _0x38d224,
-          t: true,
-          bu1: "lite_0.1.5",
-          tokenCache: false
-        };
-        _0xf61c08 = await H5st.getH5st(_0x491b75);
-        _0x1bba74 = "https://api.m.jd.com/client.action";
-        _0x5bc838 = _0xf61c08.paramsData;
-        break;
-      case "wanyiwan_sign":
-        _0x491b75 = {
-          appId: "d12dd",
-          functionId: _0x458f10,
-          appid: "signed_wh5",
-          clientVersion: common.getLatestAppVersion(),
-          client: "apple",
-          body: {
-            version: 1
-          },
-          version: "4.7",
-          ua: _0x38d224,
-          t: true,
-          bu1: "lite_0.1.5",
-          tokenCache: false
-        };
-        _0xf61c08 = await H5st.getH5st(_0x491b75);
-        _0x1bba74 = "https://api.m.jd.com/client.action";
-        _0x5bc838 = _0xf61c08.paramsData;
-        break;
-      case "wanyiwan_task_list":
-        _0x1bba74 = "https://api.m.jd.com/client.action";
-        _0x5bc838 = {
-          functionId: _0x458f10,
-          body: JSON.stringify({
-            version: 1,
-            lbsSwitch: false
-          }),
-          appid: "signed_wh5"
-        };
-        break;
-      case "wanyiwan_point_record":
-      case "wanyiwan_award_record":
-        _0x1bba74 = "https://api.m.jd.com/client.action";
-        _0x5bc838 = {
-          functionId: _0x458f10,
-          body: JSON.stringify({
-            pageNum: 1,
-            version: 1
-          }),
-          appid: "signed_wh5"
-        };
-        break;
-      case "wanyiwan_exchange_page":
-        _0x1bba74 = "https://api.m.jd.com/client.action";
-        _0x5bc838 = {
-          functionId: _0x458f10,
-          body: JSON.stringify({
-            version: 1
-          }),
-          appid: "signed_wh5",
-          t: Date.now(),
-          clientVersion: common.getLatestAppVersion(),
-          client: "apple"
-        };
-        break;
-      case "wanyiwan_do_task":
-        _0x491b75 = {
-          appId: "89db2",
-          functionId: _0x458f10,
-          appid: "signed_wh5",
-          clientVersion: common.getLatestAppVersion(),
-          client: "apple",
-          body: {
-            itemId: _0x3569dc?.["itemId"] || "",
-            taskType: _0x2c8870.taskType,
-            assignmentId: _0x2c8870.encryptAssignmentId,
-            actionType: _0x4a62bd ?? "",
-            version: 1
-          },
-          version: "4.7",
-          ua: _0x38d224,
-          t: true,
-          bu1: "lite_0.1.5",
-          tokenCache: false
-        };
-        _0x2c8870.taskType !== 1 && (delete _0x491b75.body.itemId, delete _0x491b75.body.actionType);
-        _0xf61c08 = await H5st.getH5st(_0x491b75);
-        _0x1bba74 = "https://api.m.jd.com/client.action";
-        _0x5bc838 = _0xf61c08.paramsData;
-        break;
-      case "wanyiwan_task_receive_award":
-        _0x1bba74 = "https://api.m.jd.com/client.action";
-        _0x5bc838 = {
-          functionId: _0x458f10,
-          appid: "signed_wh5",
-          body: JSON.stringify({
-            taskType: 1,
-            assignmentId: _0x2c8870.encryptAssignmentId,
-            version: 1
-          }),
-          client: "apple",
-          clientVersion: common.getLatestAppVersion(),
-          t: Date.now(),
-          h5st: null
-        };
-        break;
-      case "wanyiwan_assist":
-        _0x491b75 = {
-          appId: "ba505",
-          functionId: _0x458f10,
-          appid: "signed_wh5",
-          clientVersion: common.getLatestAppVersion(),
-          client: "apple",
-          body: {
-            inviteCode: _0x5af0fd,
-            version: 1
-          },
-          version: "4.7",
-          ua: _0x38d224,
-          t: true,
-          bu1: "lite_0.1.5",
-          tokenCache: false
-        };
-        _0xf61c08 = await H5st.getH5st(_0x491b75);
-        _0x1bba74 = "https://api.m.jd.com/client.action";
-        _0x5bc838 = _0xf61c08.paramsData;
-        break;
-      case "turnHappyHome":
-        _0x491b75 = {
-          appId: "ba505",
-          functionId: _0x458f10,
-          appid: "activities_platform",
-          clientVersion: common.getLatestAppVersion(),
-          client: "apple",
-          body: {
-            linkId: turnlinkId
-          },
-          version: "4.7",
-          ua: _0x38d224,
-          t: true,
-          bu1: "lite_0.1.5",
-          tokenCache: false
-        };
-        _0xf61c08 = await H5st.getH5st(_0x491b75);
-        _0x1bba74 = "https://api.m.jd.com/api";
-        _0x5bc838 = _0xf61c08.paramsData;
-        break;
-      case "turnHappyDouble":
-        _0x491b75 = {
-          appId: "614f1",
-          functionId: _0x458f10,
-          appid: "activities_platform",
-          clientVersion: common.getLatestAppVersion(),
-          client: "apple",
-          body: {
-            linkId: turnlinkId,
-            turnNum: turnNum
-          },
-          version: "4.7",
-          ua: _0x38d224,
-          t: true,
-          bu1: "lite_0.1.5",
-          tokenCache: false
-        };
-        _0xf61c08 = await H5st.getH5st(_0x491b75);
-        _0x1bba74 = "https://api.m.jd.com/api";
-        _0x5bc838 = _0xf61c08.paramsData;
-        break;
-      case "turnHappyReceive":
-        _0x491b75 = {
-          appId: "25fac",
-          functionId: _0x458f10,
-          appid: "activities_platform",
-          clientVersion: common.getLatestAppVersion(),
-          client: "apple",
-          body: {
-            linkId: turnlinkId
-          },
-          version: "4.7",
-          ua: _0x38d224,
-          t: true,
-          bu1: "lite_0.1.5",
-          tokenCache: false
-        };
-        _0xf61c08 = await H5st.getH5st(_0x491b75);
-        _0x1bba74 = "https://api.m.jd.com/api";
-        _0x5bc838 = _0xf61c08.paramsData;
-        break;
-      case "turnHappyDetailList":
-        _0x1bba74 = "https://api.m.jd.com/api";
-        _0x5bc838 = {
-          functionId: _0x458f10,
-          body: JSON.stringify({
-            linkId: turnlinkId,
-            pageNum: 1,
-            pageSize: 30
-          }),
-          appid: "activities_platform",
-          t: Date.now(),
-          clientVersion: common.getLatestAppVersion(),
-          client: "apple",
-          h5st: null
-        };
-        break;
-      case "superRedBagHome":
-        _0x491b75 = {
-          appId: "5be1b",
-          functionId: _0x458f10,
-          appid: "activity_platform_se",
-          clientVersion: common.getLatestAppVersion(),
-          client: "apple",
-          body: {
-            linkId: superlinkId
-          },
-          version: "4.7",
-          ua: _0x38d224,
-          t: true
-        };
-        _0xf61c08 = await H5st.getH5st(_0x491b75);
-        _0x1bba74 = "https://api.m.jd.com/api";
-        _0x5bc838 = _0xf61c08.paramsData;
-        break;
-      case "superRedBagDraw":
-        _0x491b75 = {
-          appId: "89cfe",
-          functionId: _0x458f10,
-          appid: "activity_platform_se",
-          clientVersion: common.getLatestAppVersion(),
-          client: "apple",
-          body: {
-            linkId: superlinkId
-          },
-          version: "4.7",
-          ua: _0x38d224,
-          t: true
-        };
-        _0xf61c08 = await H5st.getH5st(_0x491b75);
-        _0x1bba74 = "https://api.m.jd.com/api";
-        _0x5bc838 = _0xf61c08.paramsData;
-        break;
-      case "worldCupGuessHome":
-        _0x491b75 = {
-          appId: "49bbc",
-          functionId: _0x458f10,
-          appid: "activities_platform",
-          clientVersion: common.getLatestAppVersion(),
-          client: "apple",
-          body: {
-            linkId: "Y-rvrlRieX6qg8YqJLwPKg",
-            balance: 0
-          },
-          version: "4.7",
-          ua: _0x38d224,
-          t: true
-        };
-        _0xf61c08 = await H5st.getH5st(_0x491b75);
-        _0x1bba74 = "https://api.m.jd.com/api";
-        _0x5bc838 = _0xf61c08.paramsData;
-        break;
-      default:
-        console.log("❌ 未知请求 " + _0x458f10);
-        return;
-    }
-    const _0x4c82ab = {
-      rfs: "0000",
-      openudid: _0x474cdf,
-      screen: "430*932",
-      osVersion: common.getLatestIOSVersion(),
-      build: common.getLatestAppBuildVersion(),
-      d_brand: "iPhone",
-      d_model: "iPhone16,2",
-      partner: ""
-    };
-    _0x4b9f70 && (common["x-api-eid-token"] = _0x4b9f70);
-    _0x5bc838 && Object.assign(_0x5bc838, _0x4c82ab);
-    _0x3e5172 && Object.assign(_0x3e5172, _0x4c82ab);
-    const _0x4a8d6b = {
-      url: _0x1bba74,
-      method: _0x2ccae5,
-      headers: {
-        origin: "https://prodev.m.jd.com",
-        Referer: "https://pro.m.jd.com/mall/active/3fcyrvLZALNPWCEDRvaZJVrzek8v/index.html",
-        "User-Agent": _0x38d224,
-        Cookie: _0x5dea30,
-        "content-type": "application/x-www-form-urlencoded",
-        accept: "application/json, text/plain, */*",
-        "x-rp-client": "h5_1.0.0"
-      },
-      params: _0x3e5172,
-      data: _0x5bc838,
-      timeout: 30000
-    };
-    _0x2ccae5 === "GET" && (delete _0x4a8d6b.data, delete _0x4a8d6b.headers["Content-Type"]);
-    const _0x4cca5f = 1;
-    let _0x210ec1 = 0,
-      _0x4466f7 = null;
-    while (_0x210ec1 < _0x4cca5f) {
-      _0x210ec1 > 0 && (await $.wait(1000));
-      const _0x530742 = await common.request(_0x4a8d6b);
-      if (!_0x530742.success) {
-        _0x4466f7 = "🚫 " + _0x458f10 + " 请求失败 ➜ " + _0x530742.error;
-        _0x210ec1++;
-        continue;
-      }
-      if (!_0x530742.data) {
-        _0x4466f7 = "🚫 " + _0x458f10 + " 请求失败 ➜ 无响应数据";
-        _0x210ec1++;
-        continue;
-      }
-      await _0x25edd1(_0x458f10, _0x530742.data);
+  console.log("\n仅查找账号[1]缺少的卡片，账号[1]每天只能接受一次");
+  for (let _0x54517a = 0; _0x54517a < 1; _0x54517a++) {
+    $.index = _0x54517a + 1;
+    cookie = cookiesArr[_0x54517a];
+    originCookie = cookiesArr[_0x54517a];
+    common.setCookie(cookie);
+    $.UserName = decodeURIComponent(common.getCookieValue(cookie, "pt_pin"));
+    $.UA = common.genUA($.UserName);
+    $.message = notify.create($.index, $.UserName);
+    $.nickName = "";
+    console.log("\n******开始【京东账号" + $.index + "】" + ($.nickName || $.UserName) + "******\n");
+    await run();
+    common.unsetCookie();
+    if ($.outFlag || $.activityEnd) {
       break;
     }
-    _0x210ec1 >= _0x4cca5f && console.log(_0x4466f7);
+    await $.wait(parseInt(Math.random() * 1000 + 1000, 10));
   }
+  if (myCard.length > 0) {
+    for (let _0xa9aa72 = cookiesArr.length - 1; _0xa9aa72 >= 0; _0xa9aa72--) {
+      $.index = cookiesArr.length - _0xa9aa72;
+      cookie = cookiesArr[_0xa9aa72];
+      originCookie = cookiesArr[_0xa9aa72];
+      common.setCookie(cookie);
+      $.UserName = decodeURIComponent(common.getCookieValue(cookie, "pt_pin"));
+      $.UA = common.genUA($.UserName);
+      $.message = notify.create($.index, $.UserName);
+      $.nickName = "";
+      console.log("\n******开始【京东账号】" + ($.nickName || $.UserName) + "******\n");
+      await mian();
+      common.unsetCookie();
+      if ($.outFlag || $.runEnd) {
+        break;
+      }
+      await $.wait(parseInt(Math.random() * 1000 + 1000, 10));
+    }
+  }
+  if ($.selectedCardUuid) {
+    for (let _0x32d132 = 0; _0x32d132 < 1; _0x32d132++) {
+      $.index = _0x32d132 + 1;
+      cookie = cookiesArr[_0x32d132];
+      originCookie = cookiesArr[_0x32d132];
+      common.setCookie(cookie);
+      $.UserName = decodeURIComponent(common.getCookieValue(cookie, "pt_pin"));
+      $.UA = common.genUA($.UserName);
+      $.message = notify.create($.index, $.UserName);
+      $.nickName = "";
+      console.log("\n******开始【京东账号" + $.index + "】" + ($.nickName || $.UserName) + "******\n");
+      await give();
+      common.unsetCookie();
+      if ($.outFlag || $.activityEnd) {
+        break;
+      }
+      await $.wait(parseInt(Math.random() * 1000 + 1000, 10));
+    }
+  }
+  isNotify && notify.getMessage() && (notify.appendContent("\n"), await notify.push());
+})().catch(_0x676835 => $.logErr(_0x676835)).finally(() => $.done());
+async function run() {
+  try {
+    await information();
+    if ($.index === 1) {
+      const _0x416163 = $.time("yyyy-MM-dd HH:mm", $.startTime),
+        _0x2b6a65 = $.time("yyyy-MM-dd HH:mm", $.endTime);
+      console.log(($.activityName && "活动名称：#" + $.activityName + "\n") + "活动ID：" + $.activityId);
+      console.log("开始时间：" + _0x416163 + "\n结束时间：" + _0x2b6a65 + "\n");
+      const _0xfd0e2f = Date.now();
+      if ($.startTime && _0xfd0e2f < $.startTime) {
+        console.log("活动将在 " + _0x416163 + " 开始，晚点再来吧~");
+        $.activityEnd = true;
+        return;
+      }
+      if ($.endTime && _0xfd0e2f > $.endTime) {
+        console.log("活动已于 " + _0x2b6a65 + " 结束，下次早点来吧~");
+        $.activityEnd = true;
+        return;
+      }
+    }
+    await takePostRequest("getHasCard");
+    await $.wait(parseInt(Math.random() * 1000 + 1000, 10));
+    if ($.hasCardList && $.hasCardList.length > 0) {
+      console.log("\n已有卡片:");
+      $.hasCardList.forEach(_0x5239b5 => console.log(_0x5239b5.cardName + "  " + _0x5239b5.hasNum));
+      const _0x8939ee = $.hasCardList.filter(_0x448ac8 => _0x448ac8.hasNum === 0 && !_0x448ac8.cardName.includes("万能") && !_0x448ac8.cardName.includes("轻松")).map(_0x4fd472 => _0x4fd472.cardName);
+      if (_0x8939ee.length > 0) {
+        const _0x6f826a = _0x8939ee[0];
+        console.log("\n不可合成，还缺少 [" + _0x8939ee.join(", ") + "] 卡片");
+        console.log("缺少的第一张卡片是: " + _0x6f826a);
+        myCard.push(_0x6f826a);
+      }
+    }
+  } catch (_0x44d96a) {
+    console.log(_0x44d96a);
+  }
+}
+async function mian() {
+  try {
+    await information();
+    await takePostRequest("getHasCard");
+    await $.wait(parseInt(Math.random() * 1000 + 1000, 10));
+    if ($.hasCardList && $.hasCardList.length > 0) {
+      const _0x4db604 = $.hasCardList.find(_0x139441 => _0x139441.hasNum >= 1 && myCard.includes(_0x139441.cardName));
+      if (_0x4db604) {
+        console.log("找到符合条件的参数:");
+        $.selectedCardUuid = _0x4db604.cardUuid[0];
+        console.log(_0x4db604.cardName + "," + $.selectedCardUuid);
+        $.runEnd = true;
+        return;
+      } else {
+        console.log("没有找到符合条件的参数");
+      }
+    }
+    if ($.index % 5 == 0) {
+      await $.wait(parseInt(Math.random() * 5000 + 15000, 10));
+    }
+  } catch (_0x45e133) {
+    console.log(_0x45e133);
+  }
+}
+async function give() {
+  try {
+    await information();
+    await takePostRequest("initOpenCard");
+    await $.wait(parseInt(Math.random() * 1000 + 1000, 10));
+    await takePostRequest("getHasCard");
+    await $.wait(parseInt(Math.random() * 1000 + 1000, 10));
+    if ($.hasCardList && $.hasCardList.length > 0) {
+      console.log("\n已有卡片:");
+      $.hasCardList.forEach(_0x3a0c1d => console.log(_0x3a0c1d.cardName + "  " + _0x3a0c1d.hasNum));
+      const _0x380841 = $.hasCardList.filter(_0x59c1e7 => _0x59c1e7.hasNum === 0 && !_0x59c1e7.cardName.includes("万能") && !_0x59c1e7.cardName.includes("轻松")).map(_0x36f61b => _0x36f61b.cardName);
+      _0x380841.length > 0 ? console.log("\n不可合成，还缺少 [" + _0x380841.join(", ") + "] 卡片") : (await takePostRequest("synthesisCard"), await $.wait(parseInt(Math.random() * 1000 + 1000, 10)));
+    }
+  } catch (_0x877146) {
+    console.log(_0x877146);
+  }
+}
+async function information() {
+  try {
+    $.skipRun = false;
+    $.hasEnd = true;
+    $.drawStop = false;
+    $.endTime = 0;
+    $.Token = "";
+    $.Pin = "";
+    $.venderId = "";
+    $.Token = await getToken(cookie, domains);
+    if ($.Token == "") {
+      console.log("缺少必要参数，请重新运行");
+      return;
+    }
+    await getCk();
+    if (activityCookie == "") {
+      console.log("缺少必要参数，请重新运行");
+      return;
+    }
+    if ($.outFlag) {
+      console.log("IP被限制（493）\n");
+      return;
+    }
+    await takePostRequest("init");
+    if ($.venderId == "") {
+      console.log("缺少必要参数，请重新运行");
+      return;
+    }
+    await $.wait(500);
+    await takePostRequest("getMyCidPing");
+    if (!$.Pin) {
+      console.log("获取用户信息失败，请重新运行");
+      return;
+    }
+    await $.wait(500);
+    await takePostRequest("accessLogWithAD");
+    await $.wait(500);
+    await takePostRequest("activityContent");
+    if ($.hotFlag) {
+      return;
+    }
+    if (!$.actorUuid) {
+      console.log("获取不到[actorUuid]退出执行，请重新执行");
+      return;
+    }
+    await takePostRequest("drawContent");
+  } catch (_0x3186ee) {
+    console.log(_0x3186ee);
+  }
+}
+async function takePostRequest(_0x2a79cf) {
+  if ($.outFlag) {
+    return;
+  }
+  let _0x5aed12 = "",
+    _0x22aced = null,
+    _0x5333fe = "POST";
+  switch (_0x2a79cf) {
+    case "init":
+      _0x5aed12 = domains + "/dingzhi/taskact/common/init";
+      _0x22aced = "activityId=" + $.activityId + "&dzActivityType=0&adSource=&pin=";
+      break;
+    case "getMyCidPing":
+      _0x5aed12 = domains + "/customer/getMyCidPing";
+      _0x22aced = "activityId=" + $.activityId + "&token=" + $.Token + "&fromType=APP_shopGift&userId=" + $.venderId + "&pin=";
+      break;
+    case "accessLogWithAD":
+      _0x5aed12 = domains + "/common/accessLogWithAD";
+      _0x22aced = "venderId=" + $.venderId + "&code=99&pin=" + encodeURIComponent($.Pin) + "&activityId=" + $.activityId + "&pageUrl=" + encodeURIComponent($.activityUrl) + "&subType=app&adSource=";
+      break;
+    case "drawContent":
+      _0x5aed12 = domains + "/dingzhi/taskact/common/drawContent";
+      _0x22aced = "activityId=" + $.activityId + "&pin=" + encodeURIComponent($.Pin);
+      break;
+    case "activityContent":
+      _0x5aed12 = domains + "/dingzhi/mybbp/active/activityContent";
+      _0x22aced = "activityId=" + $.activityId + "&pin=" + encodeURIComponent($.Pin) + "&pinImg=" + encodeURIComponent("https://img10.360buyimg.com/imgzone/jfs/t1/7020/27/13511/6142/5c5138d8E4df2e764/5a1216a3a5043c5d.png") + "&nick=" + encodeURIComponent($.nickname) + "&cjyxPin=&cjhyPin=&shareUuid=" + $.shareUuid;
+      break;
+    case "initOpenCard":
+      _0x5aed12 = domains + "/dingzhi/mybbp/active/initOpenCard";
+      _0x22aced = "activityId=" + $.activityId + "&pin=" + encodeURIComponent($.Pin) + "&actorUuid=" + $.actorUuid + "&shareUuid=" + $.shareUuid + "&cardUuid=" + $.selectedCardUuid;
+      break;
+    case "chooseType":
+      _0x5aed12 = domains + "/dingzhi/mybbp/active/chooseType";
+      _0x22aced = "activityId=" + $.activityId + "&pin=" + encodeURIComponent($.Pin) + "&actorUuid=" + $.actorUuid + "&shareUuid=" + $.shareUuid + "&type=" + $.chooseType;
+      break;
+    case "startVisitTask":
+      _0x5aed12 = domains + "/dingzhi/common/visitTask/startVisitTask";
+      _0x22aced = "activityId=" + $.activityId + "&pin=" + encodeURIComponent($.Pin) + "&actorUuid=" + $.actorUuid + "&shareUuid=" + $.shareUuid + "&taskType=" + $.taskType + "&taskValue=" + $.taskValue;
+      break;
+    case "saveTask":
+      _0x5aed12 = domains + "/dingzhi/mybbp/active/saveTask";
+      _0x22aced = "activityId=" + $.activityId + "&pin=" + encodeURIComponent($.Pin) + "&actorUuid=" + $.actorUuid + "&shareUuid=" + $.shareUuid + "&taskType=" + $.taskType + "&taskValue=" + $.taskValue;
+      if ($.taskType === 12) {
+        _0x22aced += "&taskUuid=" + $.taskUuid;
+      }
+      break;
+    case "tsService":
+      _0x5aed12 = domains + "/dingzhi/mybbp/active/tsService";
+      _0x22aced = "activityId=" + $.activityId + "&actorUuid=" + $.actorUuid + "&pin=" + encodeURIComponent($.Pin);
+      break;
+    case "getHasCard":
+      _0x5aed12 = domains + "/dingzhi/mybbp/active/getHasCard";
+      _0x22aced = "activityId=" + $.activityId + "&actorUuid=" + $.actorUuid + "&pin=" + encodeURIComponent($.Pin);
+      break;
+    case "synthesisCard":
+      _0x5aed12 = domains + "/dingzhi/mybbp/active/synthesisCard";
+      _0x22aced = "activityId=" + $.activityId + "&actorUuid=" + $.actorUuid + "&pin=" + encodeURIComponent($.Pin);
+      break;
+    case "startDraw":
+      _0x5aed12 = domains + "/dingzhi/mybbp/active/startDraw";
+      _0x22aced = "activityId=" + $.activityId + "&actorUuid=" + $.actorUuid + "&pin=" + encodeURIComponent($.Pin);
+      break;
+    case "jdDraw":
+      _0x5aed12 = domains + "/dingzhi/mybbp/active/jdDraw";
+      _0x22aced = "activityId=" + $.activityId + "&actorUuid=" + $.actorUuid + "&pin=" + encodeURIComponent($.Pin);
+      break;
+    default:
+      console.log("错误" + _0x2a79cf);
+  }
+  const _0x2d0e61 = {
+    url: _0x5aed12,
+    method: _0x5333fe,
+    headers: {
+      Accept: "application/json",
+      "Accept-Encoding": "gzip, deflate, br",
+      "Accept-Language": "zh-cn",
+      Connection: "keep-alive",
+      "Content-Type": "application/x-www-form-urlencoded",
+      Cookie: activityCookie,
+      "User-Agent": $.UA,
+      "X-Requested-With": "XMLHttpRequest",
+      Origin: "https://mybbphdyh-2357-dz.isvjcloud.com",
+      Referer: domains
+    },
+    data: _0x22aced,
+    timeout: 20000
+  };
+  _0x5333fe === "GET" && (delete _0x2d0e61.body, delete _0x2d0e61.headers["Content-Type"]);
+  const _0x3945ad = 5;
+  let _0x486e1a = 0,
+    _0x3bf16e = null,
+    _0x8a8a65 = false;
+  while (_0x486e1a < _0x3945ad) {
+    _0x486e1a > 0 && (await $.wait(1000));
+    const _0x34f09d = await common.request(_0x2d0e61);
+    if (!_0x34f09d.success) {
+      _0x3bf16e = _0x2a79cf + " 请求失败 ➜ " + _0x34f09d.error;
+      _0x486e1a++;
+      _0x34f09d.status && [403, 493].includes(_0x34f09d.status) && (_0x8a8a65 = true);
+      continue;
+    }
+    if (["accessLog", "accessLogWithAD"].includes(_0x2a79cf)) {
+      break;
+    }
+    if (!_0x34f09d.data && !["drawContent"].includes(_0x2a79cf)) {
+      _0x3bf16e = _0x2a79cf + " 请求失败 ➜ 无响应数据";
+      _0x486e1a++;
+      continue;
+    }
+    const _0x447852 = common.getResponseCookie(_0x34f09d, activityCookie);
+    let _0x474908 = "";
+    switch (_0x2a79cf) {
+      case "getMyCidPing":
+        _0x474908 = common.getCookieValue(_0x447852, "LZ_AES_PIN");
+        _0x474908 ? $.LZ_AES_PIN = _0x474908 : (console.log("获取 LZ_AES_PIN 失败！"), $.skipRun = true);
+        break;
+    }
+    ["getMyCidPing", "getGoodsInfo", "startDraw"].includes(_0x2a79cf) && (activityCookie = _0x447852);
+    _0x474908 = common.getCookieValue(activityCookie, "LZ_AES_PIN");
+    !_0x474908 && $.LZ_AES_PIN && (activityCookie += "LZ_AES_PIN=" + $.LZ_AES_PIN + "; ");
+    const _0x1f1bb1 = common.getCookieValue(activityCookie, "LZ_TOKEN_KEY");
+    !_0x1f1bb1 && $.LZ_TOKEN_KEY && (activityCookie += "LZ_TOKEN_KEY=" + $.LZ_TOKEN_KEY + "; ");
+    const _0x15093b = common.getCookieValue(activityCookie, "LZ_TOKEN_VALUE");
+    !_0x15093b && $.LZ_TOKEN_VALUE && (activityCookie += "LZ_TOKEN_VALUE=" + $.LZ_TOKEN_VALUE + "; ");
+    await handleResponse(_0x2a79cf, _0x34f09d.data);
+    _0x8a8a65 = false;
+    break;
+  }
+  _0x486e1a >= _0x3945ad && (console.log(_0x3bf16e), _0x8a8a65 && !hotbreak && ($.outFlag = true));
+}
+async function handleResponse(_0x314a76, _0x40dfd7) {
+  try {
+    switch (_0x314a76) {
+      case "init":
+        if (_0x40dfd7.result && _0x40dfd7.result === true) {
+          $.shopId = _0x40dfd7.data?.["shopId"];
+          $.venderId = _0x40dfd7.data?.["venderId"];
+          $.startTime = _0x40dfd7.data?.["startTime"];
+          $.endTime = _0x40dfd7.data?.["endTime"];
+          $.activityType = _0x40dfd7.data?.["activityType"];
+        } else {
+          _0x40dfd7.errorMessage ? console.log("" + (_0x40dfd7.errorMessage || "")) : console.log("❓" + _0x314a76 + " " + JSON.stringify(_0x40dfd7));
+        }
+        break;
+      case "getMyCidPing":
+        if (_0x40dfd7.result && _0x40dfd7.result === true) {
+          if (_0x40dfd7.data && typeof _0x40dfd7.data?.["secretPin"] != "undefined") {
+            $.Pin = _0x40dfd7.data?.["secretPin"];
+          }
+          if (_0x40dfd7.data && typeof _0x40dfd7.data?.["nickname"] != "undefined") {
+            $.nickname = _0x40dfd7.data?.["nickname"];
+          }
+        } else {
+          _0x40dfd7.errorMessage ? console.log("" + (_0x40dfd7.errorMessage || "")) : console.log("❓" + _0x314a76 + " " + JSON.stringify(_0x40dfd7));
+        }
+        break;
+      case "activityContent":
+        if (_0x40dfd7.result && _0x40dfd7.result === true) {
+          $.activityContent = _0x40dfd7.data;
+          $.activityName = _0x40dfd7.data?.["activityName"] || "";
+          $.endTime = _0x40dfd7.data?.["endTime"] || _0x40dfd7.data?.["activityVo"] && _0x40dfd7.data?.["activityVo"]?.["endTime"] || _0x40dfd7.data?.["activity"]?.["endTime"] || 0;
+          $.hasEnd = _0x40dfd7.data.hasEnd || false;
+          $.score = _0x40dfd7.data.score || 0;
+          $.score2 = _0x40dfd7.data.score2 || 0;
+          $.openCard = _0x40dfd7.data.openCard || false;
+          $.guafenStatus = _0x40dfd7.data.guafenStatus || false;
+          $.actorUuid = _0x40dfd7.data.actorUuid || 0;
+        } else {
+          _0x40dfd7.errorMessage ? console.log("" + (_0x40dfd7.errorMessage || "")) : console.log("❓" + _0x314a76 + " " + JSON.stringify(_0x40dfd7));
+        }
+        break;
+      case "initOpenCard":
+        if (_0x40dfd7.result && _0x40dfd7.result === true) {
+          $.openList = _0x40dfd7.data.openInfo || [];
+          $.showCardRecordList = _0x40dfd7.data.showCardRecordList || [];
+          $.allOpenCard = _0x40dfd7.data.allOpenCard || _0x40dfd7.data.isOpenCardStatus || false;
+          $.openCardBean = _0x40dfd7.data.openCardBean || 0;
+          $.assistStatus = _0x40dfd7.data.assistStatus || 0;
+          $.cardStatus = _0x40dfd7.data.cardStatus || 0;
+          if ($.openCardBean) {
+            console.log("> 开卡获得:" + $.openCardBean + "京豆🐶");
+          }
+          if ($.showCardRecordList && $.showCardRecordList.length > 0) {
+            console.log("获得卡片: " + $.showCardRecordList.map(_0xe0be61 => _0xe0be61.cardName).join(", "));
+          }
+          $.assistStatus === 1 && console.log("助力成功 ✅");
+          $.cardStatus === 1 ? console.log("接受赠送卡片成功 ✅") : console.log("接受赠送卡片失败");
+        } else {
+          _0x40dfd7.errorMessage ? console.log("" + (_0x40dfd7.errorMessage || "")) : console.log("❓" + _0x314a76 + " " + JSON.stringify(_0x40dfd7));
+        }
+        break;
+      case "chooseType":
+        if (_0x40dfd7.result && _0x40dfd7.result === true) {
+          $.addSku = _0x40dfd7.data.addSku || false;
+          $.toMainActive = _0x40dfd7.data.toMainActive || false;
+          $.viewVideo = _0x40dfd7.data.viewVideo || [];
+          $.shareNum = _0x40dfd7.data.shareNum || 0;
+          console.log(tasklist[$.chooseType] + "任务已邀请[" + $.shareNum + "/5]个好友助力");
+        } else {
+          _0x40dfd7.errorMessage ? $.chooseTypeMsg = _0x40dfd7.errorMessage || "" : console.log("❓" + _0x314a76 + " " + JSON.stringify(_0x40dfd7));
+        }
+        break;
+      case "tsService":
+        if (_0x40dfd7.result && _0x40dfd7.result === true) {
+          $.allList = _0x40dfd7.data.allList || [];
+        } else {
+          _0x40dfd7.errorMessage ? console.log("" + (_0x40dfd7.errorMessage || "")) : console.log("❓" + _0x314a76 + " " + JSON.stringify(_0x40dfd7));
+        }
+        break;
+      case "getHasCard":
+        if (_0x40dfd7.result && _0x40dfd7.result === true) {
+          $.hasCardList = _0x40dfd7.data.hasCardList || [];
+          $.drawNumJd = _0x40dfd7.data.drawNumJd || 0;
+          $.drawNum = _0x40dfd7.data.drawNum || 0;
+        } else {
+          _0x40dfd7.errorMessage ? console.log("" + (_0x40dfd7.errorMessage || "")) : console.log("❓" + _0x314a76 + " " + JSON.stringify(_0x40dfd7));
+        }
+        break;
+      case "synthesisCard":
+        if (_0x40dfd7.result && _0x40dfd7.result === true) {
+          console.log("满足合成，合成成功");
+        } else {
+          _0x40dfd7.errorMessage ? console.log("" + (_0x40dfd7.errorMessage || "")) : console.log("❓" + _0x314a76 + " " + JSON.stringify(_0x40dfd7));
+        }
+        break;
+      case "startVisitTask":
+        if (_0x40dfd7.result && _0x40dfd7.result === true) {
+          $.taskUuid = _0x40dfd7.data.taskUuid;
+        } else {
+          _0x40dfd7.errorMessage ? console.log("" + (_0x40dfd7.errorMessage || "")) : console.log("❓" + _0x314a76 + " " + JSON.stringify(_0x40dfd7));
+        }
+        break;
+      case "saveTask":
+        if (_0x40dfd7.result && _0x40dfd7.result === true) {
+          let _0x3b3913 = "完成" + $.taskname + "任务";
+          _0x40dfd7?.["data"]?.["addBeanNum"] > 0 && (_0x3b3913 += ",获得" + (_0x40dfd7?.["data"]?.["addBeanNum"] || 0) + "京豆");
+          _0x40dfd7?.["data"]?.["sendCardRecordList"] && _0x40dfd7?.["data"]?.["sendCardRecordList"]["length"] > 0 && (_0x3b3913 += ",获得卡片[" + (_0x40dfd7?.["data"]?.["sendCardRecordList"][0]["cardName"] || "") + "]");
+          console.log(_0x3b3913);
+        } else {
+          _0x40dfd7.errorMessage ? console.log("" + (_0x40dfd7.errorMessage || "")) : console.log("❓" + _0x314a76 + " " + JSON.stringify(_0x40dfd7));
+        }
+        break;
+      case "jdDraw":
+        if (_0x40dfd7.result && _0x40dfd7.result === true) {
+          _0x40dfd7.data.drawStatus ? console.log("抽奖获得: " + JSON.stringify(_0x40dfd7)) : console.log("抽奖获得: 空气");
+        } else {
+          _0x40dfd7.errorMessage ? console.log("" + (_0x40dfd7.errorMessage || "")) : console.log("❓" + _0x314a76 + " " + JSON.stringify(_0x40dfd7));
+        }
+        break;
+      case "startDraw":
+        if (_0x40dfd7.result && _0x40dfd7.result === true) {
+          if (_0x40dfd7.data?.["wdsrvo"]?.["drawOk"]) {
+            const _0x4a72d7 = _0x40dfd7.data?.["wdsrvo"]["drawInfo"];
+            if (_0x4a72d7) {
+              switch (_0x4a72d7.type) {
+                case 6:
+                  $.prize.push("🎉 " + _0x4a72d7.name + " 🐶");
+                  break;
+                case 7:
+                  const _0x5b4eaa = domains + "/dingzhi/mybbp/active/saveAddress",
+                    _0x2838f9 = _0x4a72d7.addressId,
+                    _0x459394 = _0x4a72d7.drawName;
+                  console.log(_0x4a72d7);
+                  $.prize.push("🎉 恭喜获得实物,奖品名称：" + _0x459394);
+                  const _0x1ceb3f = {
+                      baseUrl: domains,
+                      saveAddressurl: _0x5b4eaa,
+                      uuid: $.actorUuid,
+                      cookie: activityCookie,
+                      ua: $.UA,
+                      activityId: $.activityId,
+                      activityType: 99,
+                      venderId: $.venderId,
+                      secretPin: $.Pin,
+                      prizeName: _0x459394,
+                      itemsId: _0x2838f9,
+                      activityUrl: $.activityUrl
+                    },
+                    _0x550042 = await lzdz1_savePrize(_0x1ceb3f);
+                  _0x550042 && (await notify.sendNotify($.name + "中奖通知", "【京东账号" + $.index + "】" + $.nickName + "\n抽中实物 " + _0x459394 + "，已成功自动登记收货地址\n\n" + $.activityUrl));
+                  break;
+                case 8:
+                  $.prize.push("🗑️ 专享价");
+                  break;
+                case 9:
+                  $.prize.push("🗑️ " + _0x4a72d7.name + " 🎟️");
+                  break;
+                case 13:
+                case 14:
+                case 15:
+                  $.prize.push("🎉 恭喜获得" + _0x4a72d7.name + " 🎁");
+                  await notify.sendNotify($.name + "中奖通知", "【京东账号" + $.index + "】" + $.nickName + "\n抽中 " + _0x4a72d7.name + "\n\n" + $.activityUrl);
+                  break;
+                case 16:
+                  $.prize.push("🎉 " + _0x4a72d7.priceInfo + " 🧧");
+                  break;
+                default:
+                  _0x4a72d7.name.includes("券") ? $.prize.push("🗑️ 优惠券") : $.prize.push("获得：" + _0x4a72d7.name);
+                  break;
+              }
+            }
+          } else {
+            $.prize.push("💨 空气");
+          }
+        } else {
+          _0x40dfd7.errorMessage ? ($.drawError = _0x40dfd7.errorMessage, ["未开始", "结束", "不存在", "不在"].some(_0x25470d => $.drawError.includes(_0x25470d)) && ($.activityEnd = true), $.prize.push($.drawError)) : console.log("❓" + _0x314a76 + " " + JSON.stringify(_0x40dfd7));
+        }
+        break;
+      case "accessLogWithAD":
+      case "drawContent":
+        break;
+      default:
+        console.log(_0x314a76 + "-> " + _0x40dfd7);
+    }
+    typeof _0x40dfd7 == "object" && _0x40dfd7.errorMessage && _0x40dfd7.errorMessage.indexOf("火爆") > -1 && ($.hotFlag = true);
+  } catch (_0xb0dab0) {
+    console.log(_0xb0dab0);
+  }
+}
+async function getCk() {
+  $.skipRun = true;
+  const _0x46a6c3 = {
+      url: "https://lzdz1-isv.isvjd.com/wxCommonInfo/token",
+      method: "GET",
+      headers: {
+        Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7",
+        "Accept-Encoding": "gzip, deflate, br",
+        "Accept-Language": "zh-CN,zh;q=0.9",
+        Connection: "keep-alive",
+        "Sec-Fetch-Dest": "document",
+        "Sec-Fetch-Mode": "navigate",
+        "Sec-Fetch-Site": "cross-site",
+        Referer: domains,
+        "User-Agent": $.UA
+      },
+      timeout: 30000
+    },
+    _0x3b9a40 = 3;
+  let _0x3942fd = 0,
+    _0x3ea863 = null,
+    _0x1fc60f = false;
+  while (_0x3942fd < _0x3b9a40) {
+    _0x3942fd > 0 && (await $.wait(1000));
+    const _0x1b7550 = await common.request(_0x46a6c3);
+    if (!_0x1b7550.success) {
+      _0x3ea863 = "getCk ➜ " + _0x1b7550.error;
+      _0x3942fd++;
+      _0x1b7550.status && [403, 493].includes(_0x1b7550.status) && (_0x1fc60f = true);
+      continue;
+    }
+    if (!_0x1b7550.data) {
+      _0x3ea863 = "getCk ➜ 无响应数据";
+      _0x3942fd++;
+      continue;
+    }
+    activityCookie = common.getResponseCookie(_0x1b7550);
+    let _0x27bf3b = "",
+      _0x59f89d = "";
+    _0x27bf3b = common.getCookieValue(activityCookie, "LZ_TOKEN_KEY");
+    _0x59f89d = common.getCookieValue(activityCookie, "LZ_TOKEN_VALUE");
+    _0x27bf3b && ($.LZ_TOKEN_KEY = _0x27bf3b);
+    _0x59f89d && ($.LZ_TOKEN_VALUE = _0x59f89d);
+    $.skipRun = false;
+    break;
+  }
+  _0x3942fd >= _0x3b9a40 && (console.log(_0x3ea863), _0x1fc60f && !hotbreak && ($.outFlag = true));
+}
+async function getAuthorCodeList(_0xd3661) {
+  const _0x4c3a1e = await common.request({
+      url: _0xd3661,
+      method: "GET",
+      headers: {
+        "User-Agent": "Mozilla/5.0 (iPhone; CPU iPhone OS 13_2_3 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/13.0.3 Mobile/15E148 Safari/604.1 Edg/87.0.4280.88"
+      },
+      proxy: null,
+      debug: false,
+      timeout: 30000
+    }),
+    _0x3a1a53 = _0x4c3a1e.data;
+  return _0x3a1a53;
+}
+function random(_0x37bca8, _0x54aec1) {
+  return Math.floor(Math.random() * (_0x54aec1 - _0x37bca8)) + _0x37bca8;
 }
