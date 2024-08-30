@@ -1,233 +1,203 @@
-//Fri Aug 30 2024 09:02:57 GMT+0000 (Coordinated Universal Time)
+//Fri Aug 30 2024 09:03:53 GMT+0000 (Coordinated Universal Time)
 //Base:https://github.com/echo094/decode-js
 //Modify:https://github.com/smallfawn/decode_action
-mode && (activityUrl = "https://lzkj-isv.isvjcloud.com/wxSecond/activity/c8943bae199447c6911d488be4b453c4?activityId=c8943bae199447c6911d488be4b453c4", activityUrl = "https://lzkj-isv.isvjcloud.com/prod/cc/interactsaas/index?activityType=10035&templateId=2023120701dmpss&activityId=1803664460989202434&nodeId=101001&prd=cjwx", activityUrl = "https://lzkj-isv.isvjcloud.com/prod/cc/interactsaas/index?activityType=10035&templateId=2021062190900dmpss011&activityId=1810940065104728066&nodeId=101001&prd=cjwx");
+if (mode) {
+  activityUrl = "https://cjhy-isv.isvjcloud.com/mc/wxMcLevelAndBirthGifts/activity?activityId=d651133fe1e74bb3823dc745d571a185";
+  activityUrl = "https://cjhy-isv.isvjcloud.com/mc/wxMcLevelAndBirthGifts/activity?activityId=25386dcd16b34b14ba50b5c6c5c5b0f4";
+  activityUrl = "https://cjhy-isv.isvjcloud.com/mc/wxMcLevelAndBirthGifts/activity?activityId=ee8648bca1ae492cacc43dcf8ae294d7";
+  activityUrl = "https://cjhy-isv.isvjcloud.com/mc/wxMcLevelAndBirthGifts/activity?activityId=b741377f23a048a08b64999b08cbd7aa";
+  activityUrl = "https://cjhy-isv.isvjcloud.com/mc/wxMcLevelAndBirthGifts/activity?activityId=b1cd3698edad47698573bad5742356f6";
+  activityUrl = "https://lzkj-isv.isvjd.com/prod/cc/interaction/v2/20002/1001/?shopId=1000309923&activityId=1762435679669395458";
+  activityUrl = "https://cjhy-isv.isvjcloud.com/mc/wxMcLevelAndBirthGifts/activity?activityId=d9f1239d4c4e40a49bf9930f11ed11a6";
+  activityUrl = "https://cjhy-isv.isvjcloud.com/mc/wxMcLevelAndBirthGifts/activity?activityId=3c4e7a9f91fd48b5b9250f4dd15ef3e0";
+  activityUrl = "https://cjhy-isv.isvjcloud.com/mc/wxMcLevelAndBirthGifts/activity?activityId=1551087f866b4ad69054347af290c6ab";
+  activityUrl = "https://cjhy-isv.isvjcloud.com/mc/wxMcLevelAndBirthGifts/activity?activityId=7eab52c6fa3640c18e2ca8abf39dbd4a";
+  activityUrl = "https://cjhydz-isv.isvjcloud.com/mc/wxMcLevelAndBirthGifts/haier/activity?activityId=80da786553fa4fefb4ea880a9b8cb71e";
+  activityUrl = "https://cjhy-isv.isvjcloud.com/mc/wxMcLevelAndBirthGifts/activity?activityId=6d93438452b04f2784422e8c8d4b0f61";
+  activityUrl = "https://cjhy-isv.isvjcloud.com/mc/wxMcLevelAndBirthGifts/activity?activityId=e22b8e9178cd496797d22280c2d7d637";
+}
 const {
-  RunMode: _0x22ac5b,
-  UserMode: _0x2fca3c
+  RunMode: _0x5883a7,
+  UserMode: _0x472847,
+  baseCommonEnv: _0x2885ee,
+  baseCommonEnvKey: _0x1540f7
 } = require("./bear");
-_0x22ac5b.envInfo = {
-  "name": "读秒手速beta",
-  "runName": "jd_wx_secondDraw",
-  "version": "2.0.0"
+_0x2885ee.beanNum = parseInt(process.env?.["B_WX_LEVEL_BIRTH_BEAN_NUM"] || 10);
+_0x1540f7.B_WX_LEVEL_BIRTH_BEAN_NUM = "beanNum";
+_0x2885ee.receiveMode = parseInt(process.env.B_WX_LEVEL_BIRTH_RECEIVE_MODE || 0);
+_0x2885ee.cjRetryCount = parseInt(process.env.B_WX_LEVEL_BIRTH_RETRY_COUNT || 3);
+_0x1540f7.B_WX_LEVEL_BIRTH_RECEIVE_MODE = "receiveMode";
+_0x1540f7.B_WX_LEVEL_BIRTH_RETRY_COUNT = "cjRetryCount";
+_0x5883a7.envInfo = {
+  "name": "等级/生日礼包beta",
+  "runName": "jd_wx_levelBirth",
+  "version": "2.0.1"
 };
-class _0x15faab extends _0x2fca3c {
-  constructor(_0x21ffea, _0x8b77d3) {
-    super(_0x21ffea, _0x8b77d3);
-    this.lzkjOpenCard = true;
+class _0xa05f4e extends _0x472847 {
+  constructor(_0x9bfc8e, _0x416306) {
+    super(_0x9bfc8e, _0x416306);
+    this.level = 0;
+    this.openedCard = false;
+  }
+  async ["saveBirthDay"]() {
+    let _0x5efd03 = this.formatDate(Date.now(), "yyyy-MM-dd"),
+      _0x39c1f6 = await this.wxApi("mc/wxMcLevelAndBirthGifts/saveBirthDay", {
+        "venderId": this.venderId,
+        "pin": this.secretPin,
+        "birthDay": _0x5efd03
+      });
+    if (_0x39c1f6 && _0x39c1f6.result) {
+      this.log("设置生日" + _0x5efd03 + "成功");
+      return;
+    }
+    let _0x525398 = _0x39c1f6?.["errorMessage"] || "设置生日失败";
+    this.log(_0x525398);
+  }
+  async ["sendBirthGifts"](_0x17fdfd = 0) {
+    let _0x17a979 = await this.wxApi("mc/wxMcLevelAndBirthGifts/sendBirthGifts", {
+      "activityId": this.activityId,
+      "venderId": this.venderId,
+      "pin": this.secretPin,
+      "level": this.level
+    });
+    this.debug(_0x17a979);
+    if (_0x17a979 && _0x17a979.result) {
+      let _0x485c63 = [];
+      if (_0x17a979.data?.["birthdayData"]) for (let _0x6bd370 of _0x17a979.data.birthdayData) {
+        _0x6bd370.name && _0x485c63.push(_0x6bd370.beanNum + "个" + _0x6bd370.name);
+      }
+      _0x485c63.length > 0 ? this.putMsg(_0x485c63.join(",")) : this.putMsg("没有获得奖品");
+      return;
+    }
+    let _0x1fcb51 = _0x17a979?.["errorMessage"] || _0x17a979?.["data"]?.["birthdayError"] || "领取生日礼包失败";
+    if (_0x1fcb51.includes("奖品已领完") && _0x17fdfd <= _0x2885ee.cjRetryCount) {
+      return this.debug(_0x1fcb51), await this.sendBirthGifts(_0x17fdfd + 1);
+    }
+    this.putMsg(_0x1fcb51);
+    await this.wxStopSync(_0x1fcb51);
+  }
+  async ["sendLevelGifts"]() {
+    let _0x34890d = await this.wxApi("mc/wxMcLevelAndBirthGifts/sendLevelGifts", {
+      "activityId": this.activityId,
+      "venderId": this.venderId,
+      "pin": this.secretPin,
+      "level": this.level
+    });
+    this.debug(_0x34890d);
+    if (_0x34890d && _0x34890d.result) {
+      let _0x16eb42 = [];
+      if (_0x34890d.data?.["birthdayData"]) for (let _0x4ee0c3 of _0x34890d.data.birthdayData) {
+        _0x4ee0c3.name && _0x16eb42.push(_0x4ee0c3.beanNum + "个" + _0x4ee0c3.name);
+      }
+      if (_0x16eb42.length > 0) {
+        this.putMsg(_0x16eb42.join(","));
+      } else {
+        this.putMsg("没有获得奖品");
+      }
+      return;
+    }
+    let _0x966c17 = _0x34890d?.["errorMessage"] || _0x34890d?.["data"]?.["levelError"] || "领取等级礼包失败";
+    this.putMsg(_0x966c17);
+    await this.wxStopSync(_0x966c17);
   }
   async ["userTask"]() {
     await this.isvObfuscator();
-    await this.getDefenseUrls();
-    if (this.mode === "100") {
+    if (this.mode === "v2") {
       await this.login();
-      let _0x21e987 = await this.lzkjApi("api/task/dmpss/activity", {
-        "shareUserId": ""
-      });
-      this.debug(_0x21e987);
-      await this.lzkjTask(_0x21e987?.["data"]?.["taskActivityInfoVO"]?.["taskList"]);
-      _0x21e987 = await this.lzkjApi("api/task/dmpss/activity", {
-        "shareUserId": ""
-      });
-      let _0x418a58 = _0x21e987.data.challengeSecond,
-        _0x27b277 = _0x21e987.data.challengeMilliSecond,
-        _0x8062b4 = _0x418a58 + "." + _0x27b277,
-        _0x165adb = _0x21e987.data.dayChance || 0,
-        _0x26b342 = _0x21e987.data.pubKey,
-        _0x40026f = _0x21e987.data.roomId;
-      if (_0x165adb === 0) {
-        this.putMsg("无游戏次数");
+      let _0x2d5b2a = await this.v2Api("api/" + this.activityType + "/getActivityInfo");
+      this.debug(_0x2d5b2a);
+      if (!_0x2d5b2a && !_0x2d5b2a.code === 200) {
+        this.putMsg("获取活动信息失败");
         return;
       }
-      while (_0x165adb-- > 0) {
-        let _0x297280 = await this.lzkjApi("api/task/dmpss/startGame", {
-            "roomId": _0x40026f
-          }),
-          _0x29735f = _0x297280.data,
-          _0x184dcb = _0x40026f + "," + _0x29735f;
-        const _0x5acaa3 = this.rsaEncrypt(_0x26b342, {
-          "encryptionScheme": "pkcs1"
-        }, {
-          "id": _0x184dcb,
-          "score": _0x8062b4
-        });
-        let _0x4d60f0 = await this.lzkjApi("api/task/dmpss/draw", {
-          "result": _0x5acaa3
-        });
-        this.debug(_0x4d60f0);
-        if (_0x4d60f0?.["data"]?.["isDraw"]) {
-          this.putMsg(_0x4d60f0.data.prizeName);
-          _0x4d60f0.data.prizeType == 3 && (this.addressId = _0x4d60f0.data.addressId, this.prizeName = _0x4d60f0.data.prizeName, await this.saveAddress());
-          _0x4d60f0.data.prizeType == 7 && this.putMsg(JSON.parse(_0x4d60f0.data?.["prizeJson"] || {})?.["cardNumber"] || "");
-        } else this.putMsg("空气");
-        _0x21e987 = await this.lzkjApi("api/task/dmpss/activity", {
-          "shareUserId": ""
-        });
-        _0x40026f = _0x21e987.data.roomId;
+      if (_0x2d5b2a?.["data"]?.["remark"]?.["includes"]("已经领取") || _0x2d5b2a?.["data"]?.["status"] === 4) {
+        this.putMsg("已领取");
+        return;
       }
+      let _0x51fa65 = await this.v2Api("api/" + this.activityType + "/birthday", {
+        "birthday": this.formatDate(Date.now(), "yyyy/MM/dd")
+      });
+      this.debug(_0x51fa65);
+      let _0x270bdd = await this.v2Api("api/" + this.activityType + "/receivePrize");
+      this.debug(_0x270bdd);
+      let _0xe952ff = await this.v2Api("api/" + this.activityType + "/myPrizes");
+      this.debug(_0xe952ff);
+      if (_0xe952ff && _0xe952ff.code === 200) {
+        this.putMsg(_0xe952ff.data.map(_0x5c86bf => "" + _0x5c86bf.prizeName).join(",") || "空气");
+        return;
+      }
+      this.putMsg("领取失败");
       return;
     }
+    await this.getDefenseUrls();
     await this.wxCommonInfo();
     await this.getSimpleActInfoVo();
+    this.defenseUrls.length === 0 ? await this.getMyPing() : await this.initPinToken();
     await this.accessLog();
-    this.index === 0 && (await this.getShopInfo());
-    let _0x6e924c = await this.wxApi("wxSecond/getData", {
-      "activityId": this.activityId,
+    let _0x2f8164 = await this.wxApi("mc/new/brandCard/common/shopAndBrand/getOpenCardInfo", {
+      "venderId": this.venderId,
+      "buyerPin": this.secretPin,
+      "activityType": 103
+    });
+    this.debug(_0x2f8164);
+    if (_0x2f8164 && _0x2f8164.result) this.openedCard = _0x2f8164.data.openedCard;else {
+      let _0x2f0c92 = _0x2f8164?.["errorMessage"] || "获取开卡信息失败";
+      this.log(_0x2f0c92);
+    }
+    let _0x4349aa = await this.wxApi("mc/wxMcLevelAndBirthGifts/getMemberLevel", {
+      "venderId": this.venderId,
       "pin": this.secretPin
     });
-    this.debug(_0x6e924c);
-    if (!_0x6e924c || !_0x6e924c.result) {
-      let _0xcffd36 = _0x6e924c?.["errorMessage"] || "获取数据失败";
-      this.putMsg(_0xcffd36);
-      await this.wxStopSync(_0xcffd36);
-      return;
+    this.debug(_0x4349aa);
+    if (_0x4349aa && _0x4349aa.result) this.level = _0x4349aa.data.level;else {
+      let _0x214163 = _0x4349aa?.["errorMessage"] || "获取会员等级失败";
+      this.log(_0x214163);
     }
-    let {
-        score: _0x3e3a22,
-        secondActive: _0x13844f,
-        brushBane: _0x19ad3e,
-        bid: _0x38249e,
-        uuid: _0x11f476,
-        prizeList: _0x13080e
-      } = this.activityInfo,
-      _0x2a2cd0 = _0x13844f?.["startTime"] || 0,
-      _0x43c510 = _0x13844f?.["endTime"] || 0,
-      _0x5108a8 = _0x13844f?.["targetTime"] || 0;
-    _0x2fca3c.activity.startTime = _0x2a2cd0;
-    _0x2fca3c.activity.endTime = _0x43c510;
-    if (_0x2a2cd0 && _0x2a2cd0 > this.timestamp()) {
-      this.log("活动未开始");
-      this.stop();
-      return;
-    }
-    if (_0x43c510 && _0x43c510 < this.timestamp()) {
-      this.log("活动已结束");
-      await this.writeLongCacheByStop();
-      this.stop();
-      return;
-    }
-    _0x13080e = _0x13080e?.["filter"](_0x1b8305 => [6, 7, 9, 13, 14, 15, 16].includes(_0x1b8305.type)) ?? [];
-    if (_0x13080e.length === 0) {
-      this.log("垃圾或领完");
-      this.stop();
-      return;
-    }
-    let _0x4b2726 = await this.wxApi("wxSecond/getTaskDay", {
-      "activityId": this.activityId,
-      "pin": this.secretPin,
-      "uuid": _0x11f476
+    let _0xa94c23 = await this.activityContent({
+      "level": 1
     });
-    if (_0x4b2726 && _0x4b2726.result) {
-      let _0x38022 = _0x4b2726.data || [];
-      for (let _0x33d391 of _0x38022) {
-        let _0x5e3a46 = _0x33d391.taskType;
-        for (let _0x1d60a0 = 0; _0x1d60a0 < _0x33d391.dayMaxNumber && _0x33d391.finishNumber === 0; _0x1d60a0++) {
-          if ([2, 5].includes(_0x5e3a46)) {
-            let _0x373e16 = _0x33d391.activityTaskGoods.slice(_0x1d60a0 * _0x33d391.commodity, _0x1d60a0 * _0x33d391.commodity + _0x33d391.commodity).filter(_0x52947b => _0x52947b.complete === 0);
-            for (let _0x5b8ab6 of _0x373e16) {
-              let _0x128e74 = await this.wxApi("wxSecond/finishTask", {
-                "activityId": this.activityId,
-                "pin": this.secretPin,
-                "uuid": _0x11f476,
-                "taskType": _0x5e3a46,
-                "skuId": _0x5b8ab6.skuId
-              });
-              this.debug(_0x128e74);
-              getTaskGoods && getTaskGoods.result && (_0x3e3a22 += _0x128e74.data?.["score"] ?? 0);
-              await this.sleep(500);
-            }
-            await this.sleep(500);
-          }
-        }
-        await this.sleep(500);
-      }
-    }
-    let _0x1f23c6 = await this.wxApi("wxSecond/getTask", {
-      "activityId": this.activityId,
-      "pin": this.secretPin,
-      "uuid": _0x11f476
-    });
-    if (_0x1f23c6 && _0x1f23c6.result) {
-      let _0x463346 = _0x1f23c6.data || [];
-      for (let _0xa6f7a5 of _0x463346) {
-        let _0x3522cf = _0xa6f7a5.taskType;
-        if ([3].includes(_0x3522cf)) {
-          for (let _0x1ea313 = 0; _0x1ea313 < _0xa6f7a5.dayMaxNumber && _0xa6f7a5.finishNumber === 0; _0x1ea313++) {
-            let _0x531a29 = await this.wxApi("wxSecond/finishTask", {
-              "activityId": this.activityId,
-              "pin": this.secretPin,
-              "uuid": _0x11f476,
-              "taskType": _0x3522cf,
-              "skuId": good.skuId
-            });
-            this.debug(_0x531a29);
-            _0x531a29 && _0x531a29.result && (_0x3e3a22 += _0x531a29.data?.["score"] ?? 0);
-            await this.sleep(500);
-          }
-        }
-        if ([12].includes(_0x3522cf)) for (let _0x29cbda = 0; _0x29cbda < _0xa6f7a5.dayMaxNumber && _0xa6f7a5.finishNumber === 0; _0x29cbda++) {
-          let _0x45c420 = await this.wxApi("wxSecond/finishTask", {
-            "activityId": this.activityId,
-            "pin": this.secretPin,
-            "uuid": _0x11f476,
-            "taskType": _0x3522cf,
-            "skuId": ""
-          });
-          this.debug(_0x45c420);
-          if (_0x45c420 && _0x45c420.result) {
-            _0x3e3a22 += _0x45c420.data?.["score"] ?? 0;
-          }
-          await this.sleep(500);
-        }
-        await this.sleep(500);
-      }
-    }
-    if (_0x3e3a22 === 0) {
-      this.log("无次数");
-      return;
-    }
-    _0x3e3a22 = Math.min(_0x3e3a22, 7);
-    while (_0x3e3a22-- > 0) {
-      let _0x9f4a8a = await this.wxApi("wxSecond/checkAuth", {
-        "activityId": this.activityId,
-        "pin": this.secretPin,
-        "brushBane": _0x19ad3e,
-        "bid": _0x38249e
-      });
-      this.debug(_0x9f4a8a);
-      if (!_0x9f4a8a || !_0x9f4a8a.result) {
-        let _0x5aa523 = _0x9f4a8a?.["errorMessage"] || "获取数据失败";
-        this.putMsg(_0x5aa523);
-        await this.wxStopSync(_0x5aa523);
+    this.debug(_0xa94c23);
+    if (_0xa94c23 && _0xa94c23.result) {
+      let _0x253371 = JSON.parse(_0xa94c23.data?.["content"]).filter(_0x499131 => [4, 6, 7, 9, 13, 14, 15, 16].includes(_0x499131.type) && (_0x2885ee.receiveMode === 1 ? _0x499131.name == "京豆" : true));
+      if (_0x253371.length === 0) {
+        this.putMsg("垃圾或领完");
+        this.stop();
         return;
       }
-      let _0x44ae85 = _0x9f4a8a.data?.["brushResult"],
-        _0xee0925 = await this.wxApi("wxSecond/start", {
-          "activityId": this.activityId,
-          "pin": this.secretPin,
-          "brushBane": _0x19ad3e,
-          "bid": _0x38249e,
-          "uuid": _0x11f476,
-          "seconds": _0x5108a8,
-          "brushResult": _0x44ae85
-        });
-      this.debug(_0xee0925);
-      if (_0xee0925 && _0xee0925.result) {
-        this.putMsg(_0xee0925.data?.["draw"]?.["name"] || "空气");
-        (_0xee0925.data?.["type"] === 7 || _0xee0925.data?.["drawInfoType"] === 7) && _0xee0925.data.needWriteAddress === "y" && (this.addressId = _0xee0925.data.addressId, this.prizeName = _0xee0925.data?.["draw"]?.["name"], await this.addAddress());
-        continue;
-      }
-      let _0x59efbb = _0xee0925?.["errorMessage"] || "游戏失败";
-      this.putMsg(_0x59efbb);
-      await this.wxStopSync(_0x59efbb);
+      _0x253371 = _0x253371.sort((_0x35a217, _0x9534f4) => _0x35a217.drawLevel - _0x9534f4.drawLevel);
+      if (_0xa94c23.data.isReceived === 0) {
+        let _0x2e60b6 = !this.openedCard && _0x253371.filter(_0xe0747 => _0xe0747.beanNum >= _0x2885ee.beanNum && _0xe0747.name == "京豆" && _0xe0747.drawLevel == 1).length > 0;
+        if (_0x2e60b6) {
+          await this.getShopOpenCardInfo();
+          await this.bindWithVender();
+          if (this.canNotOpenCard) return;
+          this.level = 1;
+        }
+        this.debug(this.activityType);
+        if (_0x253371[0]?.["drawLevel"] > this.level) return this.putMsg("等级不够"), this.exit();
+        if (this.activityType === 103) {
+          if (!_0x253371.some(_0x15af44 => _0x2885ee.receiveMode === 1 ? _0x15af44.name == "京豆" && _0x15af44.drawLevel == this.level : true)) return this.putMsg("无京豆,退出领取"), this.exit();
+          await this.saveBirthDay();
+          await this.sendBirthGifts();
+        } else {
+          if ([104, 119].includes(this.activityType)) {
+            if (_0x253371[0]?.["drawLevel"] > this.level) return this.putMsg("等级不够"), this.exit();
+            await this.sendLevelGifts();
+          }
+        }
+      } else this.putMsg("已领取");
+      return;
     }
+    let _0x61a783 = _0xa94c23?.["errorMessage"] || "获取活动信息失败";
+    this.putMsg(_0x61a783);
+    await this.wxStopSync(_0x61a783);
   }
 }
-_0x22ac5b.activity = {
+_0x5883a7.activity = {
   "activityUrl": activityUrl
 };
-_0x22ac5b.TaskClass = _0x15faab;
-_0x22ac5b.run({
+_0x5883a7.TaskClass = _0xa05f4e;
+_0x5883a7.run({
   "whitelist": ["1-20"],
   "main_thread": 3
 });
