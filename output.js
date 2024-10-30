@@ -1,8 +1,8 @@
-//Wed Oct 30 2024 12:19:18 GMT+0000 (Coordinated Universal Time)
+//Wed Oct 30 2024 12:20:07 GMT+0000 (Coordinated Universal Time)
 //Base:https://github.com/echo094/decode-js
 //Modify:https://github.com/smallfawn/decode_action
 const $ = new Env("望潮");
-const notify = $.isNode() ? require("../sendNotify") : "";
+const notify = $.isNode() ? require("./sendNotify") : "";
 (() => {
   function b(ab) {
     b = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (af) {
