@@ -1,4 +1,4 @@
-//Sat Oct 26 2024 23:37:36 GMT+0000 (Coordinated Universal Time)
+//Wed Oct 30 2024 12:19:18 GMT+0000 (Coordinated Universal Time)
 //Base:https://github.com/echo094/decode-js
 //Modify:https://github.com/smallfawn/decode_action
 const $ = new Env("望潮");
